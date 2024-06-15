@@ -34,7 +34,7 @@ public class ResourceConfiguration extends WebMvcConfigurationSupport {
         .addResolver(new PathResourceResolver());
 
     registry.addResourceHandler("/" + AppConfig.PREVIEWS + "/**")
-        .addResourceLocations("file:"+ Path.of(appConfig.getSystemFilesPath())+"/")
+        .addResourceLocations("file:"+ Path.of(appConfig.getSystemFilesPath())+"/", "file:"+appConfig.getFilesPath()+"/")
         .resourceChain(true)
         .addResolver(new EncodedResourceResolver())
         .addResolver(previewPathResolver)

@@ -35,7 +35,7 @@ public class VoidPreviewService extends PreviewService {
 
   @Override
   public Path getPath(String fileId) {
-    return Path.of(AppConfig.FILES).resolve(fileId);
+    return Path.of(fileId);
   }
 
 }

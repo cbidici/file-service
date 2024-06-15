@@ -10,5 +10,5 @@ VOLUME /tmp
 COPY target/*.jar app.jar
 ENTRYPOINT ["java","-jar","/app.jar"]
 
-# dockebuild -t cbidici/file-service .
-# docker run -v ~/Desktop/calis:/media/file-base -v ~/Desktop/system:/media/system -p 8080:8080 cbidici/file-svice
+# docker build -t cbidici/file-service .
+# docker run -v ~/Desktop/calis:/media/file-base -v ~/Desktop/system:/media/system -p 8080:8080 cbidici/file-service
