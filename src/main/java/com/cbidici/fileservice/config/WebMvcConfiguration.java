@@ -5,6 +5,7 @@ import com.cbidici.fileservice.service.ThumbnailPathResolver;
 import java.nio.file.Path;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 import org.springframework.web.servlet.resource.EncodedResourceResolver;
@@ -12,7 +13,7 @@ import org.springframework.web.servlet.resource.PathResourceResolver;
 
 @Configuration
 @RequiredArgsConstructor
-public class ResourceConfiguration extends WebMvcConfigurationSupport {
+public class WebMvcConfiguration extends WebMvcConfigurationSupport {
 
   private final ThumbnailPathResolver thumbnailPathResolver;
   private final PreviewPathResolver previewPathResolver;
@@ -39,5 +40,11 @@ public class ResourceConfiguration extends WebMvcConfigurationSupport {
         .addResolver(new EncodedResourceResolver())
         .addResolver(previewPathResolver)
         .addResolver(new PathResourceResolver());
+  }
+
+  @Override
+  protected void addCorsMappings(CorsRegistry registry) {
+    registry.addMapping("/api/**")
+        .allowedOrigins("http://localhost:3000", "http://localhost");
   }
 }
