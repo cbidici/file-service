@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,7 @@ public class FileService {
     }
 
     return Arrays.stream(Objects.requireNonNull(directory.listFiles()))
+        .sorted(Comparator.comparing(File::getName))
         .skip(offset)
         .limit(size)
         .map(f -> getById(Path.of(id).resolve(f.getName()).toString()))
