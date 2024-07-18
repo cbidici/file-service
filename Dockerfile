@@ -11,4 +11,4 @@ COPY target/*.jar app.jar
 ENTRYPOINT ["java","-jar","/app.jar"]
 
 # docker build . -t cbidici/file-service --no-cache --network=host
-# docker run -v ~/Desktop/calis:/media/file-base -v ~/Desktop/system:/media/system -p 8080:8080 --detach cbidici/file-service
+# docker run --restart always -v ~/Desktop/calis:/media/file-base -v ~/Desktop/system:/media/system -p 8080:8080 --detach cbidici/file-service
