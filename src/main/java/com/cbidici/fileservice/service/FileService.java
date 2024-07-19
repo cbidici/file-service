@@ -36,6 +36,7 @@ public class FileService {
     }
 
     return Arrays.stream(Objects.requireNonNull(directory.listFiles()))
+        .filter(f -> !f.isHidden())
         .sorted(Comparator.comparing(File::getName))
         .skip(offset)
         .limit(size)
