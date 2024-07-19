@@ -45,6 +45,6 @@ public class WebMvcConfiguration extends WebMvcConfigurationSupport {
   @Override
   protected void addCorsMappings(CorsRegistry registry) {
     registry.addMapping("/api/**")
-        .allowedOrigins("http://localhost:3000", "http://localhost");
+        .allowedOrigins(appConfig.getAllowedCrossOrigins().toArray(new String[]{}));
   }
 }
