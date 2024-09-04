@@ -5,8 +5,7 @@ import lombok.experimental.SuperBuilder;
 
 @Getter
 @SuperBuilder
-public class FileDomain {
-  private final String id;
-  private final String name;
-  private final FileType type;
+public class PrevNextFileDomain extends FileDomain {
+  private String prevId;
+  private String nextId;
 }

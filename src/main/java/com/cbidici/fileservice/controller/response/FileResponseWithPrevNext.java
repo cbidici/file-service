@@ -5,8 +5,7 @@ import lombok.experimental.SuperBuilder;
 
 @Getter
 @SuperBuilder
-public class FileResponse {
-  private final String id;
-  private final String name;
-  private final String type;
+public class FileResponseWithPrevNext extends FileResponse {
+  private final String prevId;
+  private final String nextId;
 }

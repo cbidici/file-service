@@ -3,6 +3,7 @@ package com.cbidici.fileservice.service;
 import com.cbidici.fileservice.config.AppConfig;
 import com.cbidici.fileservice.entity.FileDomain;
 import com.cbidici.fileservice.entity.FileType;
+import com.cbidici.fileservice.entity.PrevNextFileDomain;
 import com.cbidici.fileservice.exception.FileServiceFileNotFoundException;
 import com.cbidici.fileservice.service.preview.PreviewServiceFactory;
 import com.cbidici.fileservice.service.thumbnail.ThumbnailServiceFactory;
@@ -14,6 +15,10 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
@@ -24,23 +29,33 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class FileService {
 
+  private static final Function<String, String> REMOVE_FILE_EXTENSION = f -> f.contains(".") ? f.substring(0, f.lastIndexOf('.')) : f;
+  private static final Predicate<FileDomain> IS_IGNORABLE_DUPLICATES = f -> f.getType() == FileType.IMAGE_ARW || f.getType() == FileType.VIDEO_QUICKTIME;
   private final AppConfig appConfig;
   private final ThumbnailServiceFactory thumbnailServiceFactory;
   private final PreviewServiceFactory previewServiceFactory;
 
-  public List<FileDomain> getChildren(String id, int offset, int size) {
+  public List<FileDomain> getChildren(String id, int offset, int size, boolean ignoreDuplicates) {
     File directory = resolvePath(id).toFile();
 
     if (!directory.isDirectory() || !isValidPath(directory.toPath())) {
       throw new FileServiceFileNotFoundException(directory.toPath().toString());
     }
 
-    return Arrays.stream(Objects.requireNonNull(directory.listFiles()))
+    List<FileDomain> files = Arrays.stream(Objects.requireNonNull(directory.listFiles()))
         .filter(f -> !f.isHidden())
         .sorted(Comparator.comparing(File::getName))
-        .skip(offset)
-        .limit(size)
         .map(f -> getById(Path.of(id).resolve(f.getName()).toString()))
+        .toList();
+
+    Set<String> unIgnorables = files.stream()
+        .filter(IS_IGNORABLE_DUPLICATES.negate())
+        .map(f -> REMOVE_FILE_EXTENSION.apply(f.getName()))
+        .collect(Collectors.toSet());
+
+    return files.stream()
+        .filter(f -> !ignoreDuplicates || IS_IGNORABLE_DUPLICATES.negate().test(f) || !unIgnorables.contains(REMOVE_FILE_EXTENSION.apply(f.getName())))
+        .skip(offset).limit(size)
         .toList();
   }
 
@@ -54,6 +69,35 @@ public class FileService {
         .id(id)
         .name(path.toFile().getName())
         .type(resolveFileType(path.toString()))
+        .build();
+  }
+
+  public PrevNextFileDomain getByIdWithNextPrev(String id, boolean ignoreDuplicates) {
+    FileDomain file = getById(id);
+    String prevFileId = null;
+    String nextFileId = null;
+    List<FileDomain> files = getChildren(Path.of(file.getId()).getParent().toString(), 0, Integer.MAX_VALUE, ignoreDuplicates)
+        .stream()
+        .filter(f -> f.getType() != FileType.DIRECTORY)
+        .toList();
+    for(int i=0; i<files.size(); i++) {
+      if(file.getId().equals(files.get(i).getId())) {
+        if(i>0) {
+          prevFileId = files.get(i-1).getId();
+        }
+        if(i+1<files.size()) {
+          nextFileId = files.get(i+1).getId();
+        }
+        break;
+      }
+    }
+
+    return PrevNextFileDomain.builder()
+        .id(file.getId())
+        .type(file.getType())
+        .name(file.getName())
+        .prevId(prevFileId)
+        .nextId(nextFileId)
         .build();
   }
 
